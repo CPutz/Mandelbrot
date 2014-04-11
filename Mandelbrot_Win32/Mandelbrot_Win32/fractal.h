@@ -1,6 +1,8 @@
 #include <GL/glut.h>
 #include <cuda_runtime.h>
 
+typedef void (*func) (double a, double b, double c, double d, double *x, double *y);
+
 //enum FractalRenderType { FRACTAL_RENDERTYPE_HISTOGRAM, FRACTAL_RENDERTYPE_EXPONENTIAL };
 
 __global__ void mandelNum ( int *counts, double *data, long *histogram, const int imgWidth, const int imgHeight, const int depth, const double midX, const double midY,
@@ -9,7 +11,7 @@ __global__ void mandelNum ( int *counts, double *data, long *histogram, const in
 __global__ void coloring( int *counts, double *data, long *histogram, GLubyte *array, const int imgWidth, const int imgHeight, const int depth, const int iterations, const int samplingFactor );
 
 __global__ void mandelNumExp( GLubyte *array, const int imgWidth, const int imgHeight, const int depth, const double midX, const double midY,
-							  const double scale, const int iterations, const bool julia, const double juliaX, const double juliaY);
+							  const double scale, const int iterations, const bool julia, const double juliaX, const double juliaY );
 
 __global__ void partialSum( long *input, const int length );
 

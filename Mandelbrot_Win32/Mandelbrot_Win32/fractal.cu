@@ -4,6 +4,18 @@
 
 using namespace std;
 
+
+/*struct Complex {
+	double Re;
+	double Im;
+
+	Complex(double re, double im) {
+		this->Re = re;
+		this->Im = im;
+	}
+};*/
+
+
 __global__ void mandelNum( int *counts, double *data, long *histogram, const int imgWidth, const int imgHeight, const double midX, const double midY,
                            const double scale, const int iterations, const bool julia, const double juliaX, const double juliaY ) {
     int index_x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -112,8 +124,9 @@ __global__ void coloring( int *counts, double *data, long *histogram, GLubyte *a
 }
 
 
+
 __global__ void mandelNumExp( GLubyte *array, const int imgWidth, const int imgHeight, const int depth, const double midX, const double midY,
-							  const double scale, const int iterations, const bool julia, const double juliaX, const double juliaY) {
+							  const double scale, const int iterations, const bool julia, const double juliaX, const double juliaY ) {
 
 	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
     int index_y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -160,17 +173,24 @@ __global__ void mandelNumExp( GLubyte *array, const int imgWidth, const int imgH
 
         //calculate mandelnumber
         while( ( asq + bsq < r ) && ( counter < iterations ) ) {
-            /*atemp = asq - bsq + x;
+            /*atemp = asq - bsq + x + c;
             b = a * b;
-            b += b + y;
+            b += b + y + d;
             a = atemp;*/
 			
-			mul(a, b, a, b, &a, &b);
-			add(a, b, x, y, &a, &b);
+			//mul(a, b, a, b, &a, &b);
+			//add(a, b, x, y, &a, &b);
 
-		    /*mul(a, b, a, b, &a, &b);
+
+			//d_function[2 * i](a, b, a, b, &a, &b);
+			//d_function[2 * i + 1](a, b, x, y, &a, &b);
+
+			//f_mul(a, b, a, b, &a, &b);
+			//f_add(a, b, x, y, &a, &b);
+
+		    mul(a, b, a, b, &a, &b);
 			add(a, b, x, y, &a, &b);
-			add(a, b, c, d, &a, &b);*/
+			add(a, b, c, d, &a, &b);
 
 			/*mul(a, b, a, b, &a, &b);
 			mul(a, b, x, y, &a, &b);
@@ -305,6 +325,10 @@ __device__ void exp( double a, double b, double *x, double *y ) {
 }
 
 
+__device__ func f_mul = mul;
+__device__ func f_add = add;
+
+
 
 void CalcFractal( GLubyte *devArray, int *counts, double *data, long *histogram, double dPosX, double dPosY, double dScale, int iWidth, int iHeight, 
 				  int iDepth, int iIterations, bool bIsJulia, double dJuliaX, double dJuliaY) {
@@ -316,7 +340,20 @@ void CalcFractal( GLubyte *devArray, int *counts, double *data, long *histogram,
     gridSize.x = iWidth / blockSize.x;
     gridSize.y = iHeight / blockSize.y;
     
-    
+    /*int n = 2;
+	func *h_function;
+	func *d_function;
+	h_function = (func*)malloc(n * iWidth * iHeight * sizeof(func));
+	cudaMalloc((void**) &d_function, n * iWidth * iHeight * sizeof(func));
+
+	for (int i = 0; i < iWidth * iHeight; ++i) {
+		cudaMemcpyToSymbol(&h_function[2 * i], f_mul, sizeof(func));
+		cudaMemcpyToSymbol(&h_function[2 * i + 1], f_add, sizeof(func));
+	}
+
+	cudaMemcpy(d_function, h_function, n * iWidth * iHeight * sizeof(func), cudaMemcpyHostToDevice);
+	*/
+
 	//switch( type ) {
 	//	case FRACTAL_RENDERTYPE_HISTOGRAM:	
 			//set histogram to 0 for all values
@@ -328,9 +365,17 @@ void CalcFractal( GLubyte *devArray, int *counts, double *data, long *histogram,
 	
 	//		break;
 	//	case FRACTAL_RENDERTYPE_EXPONENTIAL:
-			mandelNumExp <<< gridSize, blockSize >>> ( devArray, iWidth,iHeight, iDepth, dPosX, dPosY, dScale, iIterations, bIsJulia, dJuliaX, dJuliaY );
+			//mandelNumExp <<< gridSize, blockSize >>> ( devArray, iWidth,iHeight, iDepth, dPosX, dPosY, dScale, 
+			//										   iIterations, bIsJulia, dJuliaX, dJuliaY, d_function );
+
+	mandelNumExp <<< gridSize, blockSize >>> ( devArray, iWidth,iHeight, iDepth, dPosX, dPosY, dScale, 
+													   iIterations, bIsJulia, dJuliaX, dJuliaY );
+	
 	//		break;
 	//}
+
+	//free(h_function);
+	//cudaFree(d_function);
 
     cudaDeviceSynchronize();
 }
