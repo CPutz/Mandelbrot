@@ -325,8 +325,8 @@ __device__ void exp( double a, double b, double *x, double *y ) {
 }
 
 
-__device__ func f_mul = mul;
-__device__ func f_add = add;
+//__device__ func f_mul = mul;
+//__device__ func f_add = add;
 
 
 
@@ -378,6 +378,4 @@ void CalcFractal( GLubyte *devArray, int *counts, double *data, long *histogram,
 	//cudaFree(d_function);
 
     cudaDeviceSynchronize();
-
-	IsFinished();
 }

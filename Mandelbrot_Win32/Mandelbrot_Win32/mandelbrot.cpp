@@ -61,16 +61,22 @@ void Mandelbrot::Resize(int width, int height) {
 
 
 
-void Mandelbrot::Update(int iIterations) {
+void Mandelbrot::Update(int iterations) {
 	
-	if ( oldIterations != iIterations ) {
-		createHistogram(iIterations);
-		oldIterations = iIterations;
+	if ( this->iOldIterations != iterations ) {
+		createHistogram(iterations);
+		this->iOldIterations = iterations;
 	}
 	
+	calculate(iterations);
+}
+
+
+void Mandelbrot::calculate(int iterations) {
+
 	checkCudaErrors( cudaGLMapBufferObject( ( void** ) &this->devArray, this->buffer ), __LINE__, false );
 
-	CalcFractal( this->devArray, this->devCounts, this->devData, this->devHistogram, this->dPosX, this->dPosY, this->dScale, this->iWidth, this->iHeight, this->iDepth, iIterations, this->bIsJulia, this->dJuliaX, this->dJuliaY );
+	CalcFractal( this->devArray, this->devCounts, this->devData, this->devHistogram, this->dPosX, this->dPosY, this->dScale, this->iWidth, this->iHeight, this->iDepth, iterations, this->bIsJulia, this->dJuliaX, this->dJuliaY );
 	
     checkCudaErrors( cudaGLUnmapBufferObject( this->buffer ), __LINE__, false );
 }

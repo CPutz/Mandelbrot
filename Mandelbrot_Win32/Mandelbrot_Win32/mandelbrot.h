@@ -18,7 +18,7 @@ private:
 	double *devData;
 	
 	long *devHistogram;
-	int oldIterations;
+	int iOldIterations;
 	
 	bool bIsJulia;
 	double dJuliaX;
@@ -29,12 +29,13 @@ private:
 	void createBuffer( GLuint *b, int size );
 	void createTexture( GLuint *t, int w, int h );
 	void createHistogram( int iterations );
+	void calculate( int iterations );
 	
 public:
 	Mandelbrot(int iWidth, int iHeight);
 	~Mandelbrot();
 	void Initialize();
-	void Update(int iIterations);
+	void Update(int iterations);
 	void Resize(int iWidth, int iHeight);
 	void setPosition(double x, double y);
 	void setScale(double dScale);

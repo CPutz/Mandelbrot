@@ -23,7 +23,6 @@ using namespace std;
 #define BUTTON_DOWN_UNREGISTERED 1
 #define BUTTON_DOWN_REGISTERED   2
 
-__event
 unsigned int windowWidth = 512;
 unsigned int windowHeight = 512;
 
