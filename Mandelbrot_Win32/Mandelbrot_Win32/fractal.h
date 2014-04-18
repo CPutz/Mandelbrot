@@ -1,5 +1,6 @@
 #include <GL/glut.h>
 #include <cuda_runtime.h>
+#include <stdio.h>
 
 typedef void (*func) (double a, double b, double c, double d, double *x, double *y);
 
@@ -24,3 +25,5 @@ __device__ void exp( double a, double b, double *x, double *y );
 
 void CalcFractal( GLubyte *devArray, int *counts, double *data, long *histogram, double dPosX, double dPosY, double dScale, int iWidth, int iHeight, 
 				  int iDepth, int iIterations, bool bIsJulia, double dJuliaX, double dJuliaY);
+
+__event void IsFinished();

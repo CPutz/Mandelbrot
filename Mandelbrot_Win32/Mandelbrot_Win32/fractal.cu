@@ -378,4 +378,6 @@ void CalcFractal( GLubyte *devArray, int *counts, double *data, long *histogram,
 	//cudaFree(d_function);
 
     cudaDeviceSynchronize();
+
+	IsFinished();
 }

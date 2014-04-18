@@ -23,7 +23,7 @@ using namespace std;
 #define BUTTON_DOWN_UNREGISTERED 1
 #define BUTTON_DOWN_REGISTERED   2
 
-
+__event
 unsigned int windowWidth = 512;
 unsigned int windowHeight = 512;
 
@@ -61,7 +61,6 @@ int frame = 0;
 Timer *fpsTimer;
 int fps = 30;
 bool iterationChanged = false;
-
 
 
 void drawText( int x, int y, string s ) {
@@ -103,16 +102,25 @@ void displayFunc() {
     glBindTexture( GL_TEXTURE_2D, tex );
     glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, imgWidth, imgHeight, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
 
+
+	double w = 2 * scale;
+	double h = 2 * scale;
+	double x1 = (xMid - w / 2 + 1) / 2;
+	double x2 = (xMid + w / 2 + 1) / 2;
+	double y1 = (yMid - h / 2 + 1) / 2;
+	double y2 = (yMid + h / 2 + 1) / 2;
+
+
     glBegin( GL_QUADS );
 
 	glColor3f( 1.0f, 1.0f, 1.0f );
-    glTexCoord2d( 0.0, 0.0 );
+    glTexCoord2d( x1, y1 );
     glVertex2d( 0, 0 );
-    glTexCoord2d( 1.0, 0.0 );
+    glTexCoord2d( x2, y1 );
     glVertex2d( windowWidth, 0 );
-    glTexCoord2d( 1.0, 1.0 );
+    glTexCoord2d( x2, y2 );
     glVertex2d( windowWidth, windowHeight );
-    glTexCoord2d( 0.0, 1.0 );
+    glTexCoord2d( x1, y2 );
     glVertex2d( 0, windowHeight );
 
     glEnd();
