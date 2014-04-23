@@ -23,6 +23,7 @@ Mandelbrot::Mandelbrot( int iWidth, int iHeight) {
 	this->dScale = 1;
 	this->bIsJulia = false;
 	this->bIsFinished = true;
+	this->bIsFlushed = false;
 }
 
 
@@ -35,6 +36,8 @@ void Mandelbrot::Initialize() {
 
 	cudaMalloc( ( void** ) &this->devCounts, this->iWidth * this->iHeight * sizeof( int ) );
 	cudaMalloc( ( void** ) &this->devData,   this->iWidth * this->iHeight * sizeof( double ) * 2 );
+	cudaMalloc( ( void** ) &this->devArray,  this->iWidth * this->iHeight * this->iDepth * sizeof( GLubyte ) );
+	cudaMalloc( ( void** ) &this->devCalcArray, this->iWidth * this->iHeight * this->iDepth * sizeof( GLubyte ) );
 }
 
 
@@ -46,7 +49,8 @@ void Mandelbrot::Resize(int width, int height) {
 	this->iHeight = height;
 	this->iSize = this->iWidth * this->iHeight * this->iDepth * sizeof(GLubyte);
 
-	//cudaFree( ( void** ) &this->devArray );
+	cudaFree( ( void** ) &this->devArray );
+	cudaFree( ( void** ) &this->devCalcArray );
 	cudaFree( ( void** ) &this->devCounts );
 	cudaFree( ( void** ) &this->devData );
 	cudaFree( ( void** ) &this->devHistogram );
@@ -61,6 +65,8 @@ void Mandelbrot::Resize(int width, int height) {
 
 	cudaMalloc( ( void** ) &this->devCounts, this->iWidth * this->iHeight * sizeof( int ) );
 	cudaMalloc( ( void** ) &this->devData,   this->iWidth * this->iHeight * sizeof( double ) * 2 );
+	cudaMalloc( ( void** ) &this->devArray,  this->iWidth * this->iHeight * this->iDepth * sizeof( GLubyte ) );
+	cudaMalloc( ( void** ) &this->devCalcArray, this->iWidth * this->iHeight * this->iDepth * sizeof( GLubyte ) );
 }
 
 
@@ -75,28 +81,36 @@ void Mandelbrot::Update(int iterations) {
 		}
 	
 		this->bIsFinished = false;
-		//this->tCalcThread = boost::thread(&Mandelbrot::calculate, this, iterations);
-		//this->tThreads.create_thread(&Mandelbrot::calculate, this, iterations);
+		this->bIsFlushed = false;
 
 		boost::thread(&Mandelbrot::calculate, this, iterations);
 
 		//calculate(iterations);
-	} else {
-		int test = 2;
-		test *= 4;
 	}
 }
 
 
 void Mandelbrot::calculate(int iterations) {
 
-	checkCudaErrors( cudaGLMapBufferObject( ( void** ) &this->devArray, this->buffer ), __LINE__, false );
+	//checkCudaErrors( cudaGLMapBufferObject( ( void** ) &this->devArray, this->buffer ), __LINE__, false );
 
-	CalcFractal( this->devArray, this->devCounts, this->devData, this->devHistogram, this->dPosX, this->dPosY, this->dScale, this->iWidth, this->iHeight, this->iDepth, iterations, this->bIsJulia, this->dJuliaX, this->dJuliaY );
+	CalcFractal( this->devCalcArray, this->devCounts, this->devData, this->devHistogram, this->dPosX, this->dPosY, this->dScale, this->iWidth, this->iHeight, this->iDepth, iterations, this->bIsJulia, this->dJuliaX, this->dJuliaY );
 	
-    checkCudaErrors( cudaGLUnmapBufferObject( this->buffer ), __LINE__, false );
+    //checkCudaErrors( cudaGLUnmapBufferObject( this->buffer ), __LINE__, false );
 
 	this->bIsFinished = true;
+}
+
+
+void Mandelbrot::WriteBuffer() {
+
+	checkCudaErrors( cudaGLMapBufferObject( ( void** ) &this->devArray, this->buffer ), __LINE__, false );
+
+	cudaMemcpy( this->devArray, this->devCalcArray, this->iSize, cudaMemcpyDeviceToDevice );
+
+	checkCudaErrors( cudaGLUnmapBufferObject( this->buffer ), __LINE__, false );
+
+	this->bIsFlushed = true;
 }
 
 
@@ -137,6 +151,7 @@ void Mandelbrot::createTexture( GLuint* texture, int iWidth, int iHeight ) {
 
 Mandelbrot::~Mandelbrot() {
 	cudaFree( ( void** ) &this->devArray );
+	cudaFree( ( void** ) &this->devCalcArray );
 	cudaFree( ( void** ) &this->devCounts );
 	cudaFree( ( void** ) &this->devData );
 	cudaFree( ( void** ) &this->devHistogram );
@@ -179,6 +194,10 @@ GLuint Mandelbrot::getBuffer() {
 
 bool Mandelbrot::isFinished() {
 	return this->bIsFinished;
+}
+
+bool Mandelbrot::isFlushed() {
+	return this->bIsFlushed;
 }
 
 

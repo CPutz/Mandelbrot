@@ -15,6 +15,7 @@ private:
 	GLuint tex;
 	GLuint buffer;
 	GLubyte *devArray;
+	GLubyte *devCalcArray;
 	int *devCounts;
 	double *devData;
 	
@@ -26,6 +27,7 @@ private:
 	double dJuliaY;
 
 	bool bIsFinished;
+	bool bIsFlushed;
 
 	//void calc( double dPosX, double dPosY, double dScale, int iWidth, int iHeight );
 	void createBuffer( GLuint *b, int size );
@@ -38,6 +40,7 @@ public:
 	~Mandelbrot();
 	void Initialize();
 	void Update(int iterations);
+	void WriteBuffer();
 	void Resize(int iWidth, int iHeight);
 	void setPosition(double x, double y);
 	void setScale(double dScale);
@@ -45,6 +48,7 @@ public:
 	void setIsJulia(bool val);
 	bool getIsJulia();
 	bool isFinished();
+	bool isFlushed();
 	GLuint getTexture();
 	GLuint getBuffer();
 };

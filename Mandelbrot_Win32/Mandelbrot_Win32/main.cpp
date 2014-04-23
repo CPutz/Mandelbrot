@@ -90,7 +90,6 @@ void resetPerspectiveProjection() {
 
 
 void displayFunc() {
-
     timer->start();
 	setOrthographicProjection();
 
@@ -113,7 +112,7 @@ void displayFunc() {
 
     glBegin( GL_QUADS );
 
-	glColor3f( 1.0f, 1.0f, 1.0f );
+	/*glColor3f( 1.0f, 1.0f, 1.0f );
     glTexCoord2d( x1, y1 );
     glVertex2d( 0, 0 );
     glTexCoord2d( x2, y1 );
@@ -121,6 +120,16 @@ void displayFunc() {
     glTexCoord2d( x2, y2 );
     glVertex2d( windowWidth, windowHeight );
     glTexCoord2d( x1, y2 );
+    glVertex2d( 0, windowHeight );*/
+
+	glColor3f( 1.0f, 1.0f, 1.0f );
+    glTexCoord2d( 0, 0 );
+    glVertex2d( 0, 0 );
+    glTexCoord2d( 1, 0 );
+    glVertex2d( windowWidth, 0 );
+    glTexCoord2d( 1, 1 );
+    glVertex2d( windowWidth, windowHeight );
+    glTexCoord2d( 0, 1 );
     glVertex2d( 0, windowHeight );
 
     glEnd();
@@ -257,7 +266,13 @@ void idleFunc() {
 	handleKeyboard( delta );
     
 	timer->start();
-	fractal->Update( iterations );
+	if (fractal->isFinished()) {
+		if (!fractal->isFlushed()) {
+			fractal->WriteBuffer();
+		}
+
+		fractal->Update( iterations );
+	}
 	processTime = timer->stop( TIME_FORMAT_MILLI_SEC );
 	   
 	/*if ( !iterationChanged ) {
