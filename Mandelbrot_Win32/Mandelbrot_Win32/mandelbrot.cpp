@@ -6,6 +6,7 @@
 #include <cuda_gl_interop.h>
 
 #include <iostream>
+#include <Windows.h>
 
 #include "mandelbrot.h"
 #include "cuda_helper.h"
@@ -21,6 +22,7 @@ Mandelbrot::Mandelbrot( int iWidth, int iHeight) {
 	this->iSize = this->iWidth * this->iHeight * this->iDepth * sizeof(GLubyte);
 	this->dScale = 1;
 	this->bIsJulia = false;
+	this->bIsFinished = true;
 }
 
 
@@ -37,6 +39,8 @@ void Mandelbrot::Initialize() {
 
 
 void Mandelbrot::Resize(int width, int height) {
+
+	while( !this->bIsFinished );
 
 	this->iWidth = width;
 	this->iHeight = height;
@@ -63,12 +67,24 @@ void Mandelbrot::Resize(int width, int height) {
 
 void Mandelbrot::Update(int iterations) {
 	
-	if ( this->iOldIterations != iterations ) {
-		createHistogram(iterations);
-		this->iOldIterations = iterations;
-	}
+	if (this->bIsFinished) {
+
+		if ( this->iOldIterations != iterations ) {
+			createHistogram(iterations);
+			this->iOldIterations = iterations;
+		}
 	
-	calculate(iterations);
+		this->bIsFinished = false;
+		//this->tCalcThread = boost::thread(&Mandelbrot::calculate, this, iterations);
+		//this->tThreads.create_thread(&Mandelbrot::calculate, this, iterations);
+
+		boost::thread(&Mandelbrot::calculate, this, iterations);
+
+		//calculate(iterations);
+	} else {
+		int test = 2;
+		test *= 4;
+	}
 }
 
 
@@ -79,6 +95,8 @@ void Mandelbrot::calculate(int iterations) {
 	CalcFractal( this->devArray, this->devCounts, this->devData, this->devHistogram, this->dPosX, this->dPosY, this->dScale, this->iWidth, this->iHeight, this->iDepth, iterations, this->bIsJulia, this->dJuliaX, this->dJuliaY );
 	
     checkCudaErrors( cudaGLUnmapBufferObject( this->buffer ), __LINE__, false );
+
+	this->bIsFinished = true;
 }
 
 
@@ -157,6 +175,10 @@ GLuint Mandelbrot::getTexture() {
 
 GLuint Mandelbrot::getBuffer() {
 	return this->buffer;
+}
+
+bool Mandelbrot::isFinished() {
+	return this->bIsFinished;
 }
 
 

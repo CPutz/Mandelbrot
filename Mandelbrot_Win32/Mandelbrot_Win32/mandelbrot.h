@@ -1,4 +1,5 @@
 #include <GL/glut.h>
+#include <boost/thread.hpp>
 #include "fractal.h"
 
 class Mandelbrot {
@@ -23,7 +24,8 @@ private:
 	bool bIsJulia;
 	double dJuliaX;
 	double dJuliaY;
-	
+
+	bool bIsFinished;
 
 	//void calc( double dPosX, double dPosY, double dScale, int iWidth, int iHeight );
 	void createBuffer( GLuint *b, int size );
@@ -42,7 +44,7 @@ public:
 	void setJulia(double x, double y);
 	void setIsJulia(bool val);
 	bool getIsJulia();
-	void setSamplingFactor(int samplingFactor);
+	bool isFinished();
 	GLuint getTexture();
 	GLuint getBuffer();
 };

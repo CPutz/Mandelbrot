@@ -45,7 +45,7 @@ double scale = 1.0f;
 double xMid = 0;
 double yMid = 0;
 double xPos, yPos;
-int iterations = 128;
+int iterations = 1024;
 bool changePos = false;
 
 unsigned char keyState[255];
@@ -90,6 +90,7 @@ void resetPerspectiveProjection() {
 
 
 void displayFunc() {
+
     timer->start();
 	setOrthographicProjection();
 
